@@ -1,0 +1,54 @@
+node is a VH engine wich was taken out of google chrome
+.gitignore is the stuff we dont want to have in version control
+
+- transpilation: with node, a old browser can use modern java 
+- bundling: get all the components and bundle them together => much faster
+
+1. $npm install -g create-react-app
+
+2. to create a new react-app
+   - cd into Folder 
+   - then $create-react-app nameOfYourApp
+   - bsp: $create-react-app better-playlists
+
+3. cd into the directory u created and then $npm start
+
+4.react.js is using a mix of java, html and css
+  wich is calles JSX (see more https://reactjs.org/docs/introducing-jsx.html)
+  - allowes to use variables inside of html
+    like {variable} // to define this varibale:
+    let variable =  'App Name'
+    within {} you can put javascript code
+  - instead of html class u say className
+  - inlineStyle like style="color: 'green'"  
+    is written as style={{color: green}};
+    with the declared variable, let green = 'green'
+    so u are passing in objects
+
+    or like let headerStyle = {color: 'green', 'font-size': '50px}
+    <h1 style={headerSytle} Hello </h1>
+
+5. to create a new react class
+
+class App extends Component {
+  render() {
+    return (
+     ----FIlL with JSX---    
+    );
+  }
+}
+
+6. 
+let defaultStyle = {
+  color: '#ffff'
+}
+add defualtStyle like: styll={{...defaultStyle, xxx:xxx, xxx:xxx}}
+
+7. Add to Github
+
+gives you version control !
+workes like a cloud 
+
+
+
+
