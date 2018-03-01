@@ -3,12 +3,11 @@ body {
   background-size: cover;
   color: #fff;
   font-family: sans-serif;
-  overflow: hidden;
+ 
 }
 
 #scrollable {
   perspective: 20vw;
-  overflow: hidden;
   font-size: 16vh;
 }
 
@@ -19,7 +18,6 @@ ul {
 }
 
 li {
-  background: rgba(0, 174, 255, 0.185);
   border: solid 1px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -28,4 +26,14 @@ li {
   transform: rotateY(-20deg);
   height: 25vw;
   width: 25vw;
+}
+
+img {
+  flex-shrink: 0;
+  justify-content: center;
+  display: flex;
+  max-width:100%;
+  position: absolute;
+  transform: rotateY(-20deg);
+
 }
