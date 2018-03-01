@@ -50,5 +50,62 @@ gives you version control !
 workes like a cloud 
 
 
+to push :
+git init
+git add .
+git commit -m "initial commit"
+git add origin master "https://github.com/timebasher/better-playlist.git"
+git push -u origin master
+
+
+8. applying to heroku
+
+https://github.com/mars/create-react-app-buildpack
+heroku create $muchobetterplaylist--buildpack https://github.com/mars/create-react-app-buildpack.git
+
+git push heroku master
+heroku open
+
+
+9. connect to spotify
+
+do it with cmd !
+
+git clone https://github.com/mpj/oauth-bridge-template
+
+this assumes that u a running a react server on port 3000
+
+npm install
+
+SET SPOTIFY_CLIENT_ID=0afcd528d1554796a07d4bfd74f9f0d8
+SET SPOTIFY_CLIENT_SECRET=2e192e65dd5043cc8d7f498352f34a6b
+npm start
+
+10. create new Heroku server 
+
+and attach it with the spotify oAuth server
+
+
+heroku create mybackend
+heroku config:set SPOTIFY_CLIENT_ID=0afcd528d1554796a07d4bfd74f9f0d8
+heroku config:set SPOTIFY_CLIENT_SECRET=2e192e65dd5043cc8d7f498352f34a6b
+heroku config:set REDIRECT_URI=https://mybackend32423.herokuapp.com/callback
+heroku config:set FRONTEND_URI=https://XXXX(your app)
+https://still-earth-92993.herokuapp.com/
+git push heroku master
+
+got to backendULR/login
+
+11.fetch from spotify api 
+
+fetch('https://api.spotify.com/v1/..., {
+  headers : {'Authorization'. 'Bearer ' + accessToken}
+}).then( response => response.json())
+.then(data => console.log(data))
+}
+
+
+#13 19 minuten
+
 
 
