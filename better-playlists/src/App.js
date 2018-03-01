@@ -84,7 +84,7 @@ class App extends Component {
     let accessToken = parsed.access_token
 
 
-    fetch('https://api.spotify.com/v1/search?q=oasis&type=album', {
+    fetch('https://api.spotify.com/v1/search?q=nirvana&type=album', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     })
       .then(response => response.json())
@@ -120,7 +120,7 @@ class App extends Component {
         const ul = document.getElementById("items");
         const li = Array.from(ul.children);
         for (let i = 0; i < li.length; i++) {
-          li[i].style.zIndex = [i] * -1;
+          li[i].style.zIndex = 100 + ([i] * -1);
           li[i].innerHTML = imgArr[i];
         };
       });
@@ -133,6 +133,9 @@ class App extends Component {
 
     let scrollable = document.getElementById("scrollable")
     let items = document.getElementById("items")
+
+
+
 
 
     function scrollMiddleWare(inertia = 0.8) {
@@ -189,10 +192,17 @@ class App extends Component {
     scrollable.addEventListener('mousemove',
       scrollMiddleWare(.89)((scroll) => {
         items.style.left = `${scroll.abs.x}px`;
-        const itemsArr = Array.from(items.children);
-        //item.style.transform = `rotateY(0deg)`
-
       }));
+
+
+    items.addEventListener('click', clicked => {
+      Array.from(items.children).forEach(item => {
+        const cl = clicked.path[1];
+        cl.style.transform = `rotateY(0deg)`;
+      })
+    })
+
+
 
 
 
