@@ -3,12 +3,14 @@ body {
   background-size: cover;
   color: #fff;
   font-family: sans-serif;
+  overflow: hidden;
  
 }
 
 #scrollable {
   perspective: 20vw;
   font-size: 16vh;
+  overflow: hidden;
 }
 
 ul {
@@ -35,5 +37,4 @@ img {
   max-width:100%;
   position: absolute;
   transform: rotateY(-20deg);
-
-}
+} 

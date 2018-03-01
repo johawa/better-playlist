@@ -39,14 +39,16 @@ class Scrollable extends Component {
           <li></li>
           <li></li>
           <li></li>
-          <li></li>    
           <li></li>
           <li></li>
           <li></li>
           <li></li>
-          <li></li>           
+          <li></li>
+          <li></li>
         </ul>
       </div>
+
+
     );
 
   }
@@ -75,11 +77,14 @@ class App extends Component {
 
 
   componentDidMount() {
+
+
+    //Fetch Spotify Data
     let parsed = queryString.parse(window.location.search)
     let accessToken = parsed.access_token
 
 
-    fetch('https://api.spotify.com/v1/search?q=michael+jackson&type=album', {
+    fetch('https://api.spotify.com/v1/search?q=oasis&type=album', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     })
       .then(response => response.json())
@@ -115,10 +120,82 @@ class App extends Component {
         const ul = document.getElementById("items");
         const li = Array.from(ul.children);
         for (let i = 0; i < li.length; i++) {
-          li[i].style.zIndex = [i]*-1;
+          li[i].style.zIndex = [i] * -1;
           li[i].innerHTML = imgArr[i];
         };
       });
+
+
+
+
+    //Scroll Animation
+
+
+    let scrollable = document.getElementById("scrollable")
+    let items = document.getElementById("items")
+
+
+    function scrollMiddleWare(inertia = 0.8) {
+      const delta = {
+        x: null,
+      }
+      const abs = {
+        x: 0,
+        y: 0,
+      }
+
+      return function onScroll(callback) {
+
+        function notify() {
+          abs.x += delta.x;
+          callback({ abs, delta });
+        }
+
+        let requestId;
+
+        function start() {
+          requestId = requestAnimationFrame(update);
+        }
+
+        function update() {
+          delta.x *= inertia;
+          notify();
+          start();
+        }
+
+        function stop() {
+          cancelAnimationFrame(requestId);
+          requestId = null;
+        }
+
+        let prevEvent;
+
+        return function eventHandler(event) {
+          event.preventDefault();
+          if (prevEvent && event.buttons === 1) {
+            delta.x = event.clientX - prevEvent.clientX;
+            stop();
+            notify();
+          }
+
+          if (requestId === null && event.buttons === 0) {
+            start();
+          }
+          prevEvent = event;
+        }
+      }
+    }
+
+    scrollable.addEventListener('mousemove',
+      scrollMiddleWare(.89)((scroll) => {
+        items.style.left = `${scroll.abs.x}px`;
+        const itemsArr = Array.from(items.children);
+        //item.style.transform = `rotateY(0deg)`
+
+      }));
+
+
+
 
 
 
