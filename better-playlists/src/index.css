@@ -46,10 +46,7 @@ img {
   font-size: 18px;
   line-height: 1.5;
   border-radius: 500px;
-  padding: 12px 47px 8px;
-  -webkit-transition: background-color .15s ease,border-color .15s ease,color .15s ease;
-  -o-transition: background-color .15s ease,border-color .15s ease,color .15s ease;
-  transition: background-color .15s ease,border-color .15s ease,color .15s ease;
+  padding: 12px 47px 8px; 
   border-width: 0;
   letter-spacing: 1.2px;
   min-width: 130px;
@@ -71,5 +68,9 @@ img {
     background-image: none;
     border: 1px solid #d9dadc;
     border-radius: 0;
+}
+
+..search-form {
+  display: inline-block;
 }
 

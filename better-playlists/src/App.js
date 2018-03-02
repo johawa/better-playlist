@@ -28,12 +28,15 @@ class Filter extends Component {
   }
 }
 
-class Search extends Component {
+class SearchForm extends Component {
   render() {
+
+
     return (
-      <form id="search-form">
-        <input type="text" id="query" value="" class="form-control" placeholder="Type an Artist Name" />
-        <input type="submit" id="search" class="btn btn-primary" value="Search" />
+      <form id="search-form"> 
+        <h2>Search For an Artist:</h2>
+        <input type="text" id="query" className="form-control" placeholder="Type an Artist Name" />
+        <input type="submit" id="search" className="btn btn-primary" value="Search" />
       </form>
     );
   }
@@ -90,6 +93,8 @@ class App extends Component {
 
 
   componentDidMount() {
+
+
 
 
 
@@ -187,6 +192,13 @@ class App extends Component {
 
 
 
+    let searchForm = document.getElementById('search-form');
+
+    searchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const value = document.getElementById('query').value;
+      this.setState({ filterString: value })
+    }, false);
 
 
 
@@ -199,6 +211,12 @@ class App extends Component {
   }
 
   render() {
+
+
+
+
+
+
     let email = this.state.serverData.email
 
 
@@ -251,19 +269,26 @@ class App extends Component {
 
 
 
+
+
+
+
+
+
     return (
       < div >
-        <h1>{email}</h1>
-        <h2>{search}</h2>
-        <Aggregate />
-        <Aggregate />
+        <h3>Logged in as: {email}</h3>
+        {/*    <Aggregate />
+        <Aggregate /> */}
 
-        <Filter onTextChange={text =>
+        <SearchForm />
+
+        {/* <Filter onTextChange={text =>
           this.setState({ filterString: text },
-          )} />
+          )} /> */}
 
-        <Scrollable/>
-        <Search/>
+        <Scrollable />
+
         <Album />
       </div >
     );
