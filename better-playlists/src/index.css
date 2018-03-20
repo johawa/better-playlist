@@ -13,26 +13,6 @@ body {
   overflow: hidden;
 }
 
-ul {
-  display: flex;
-  position: relative;
-  list-style-type: none;  
-
-  justify-content:space-between ;
-}
-
-li {
-  border: solid 1px black;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  justify-content: center;
-  margin: 5px;
-  transform: rotateY(-20deg);
-  height: 25vw;
-  width: 25vw;
-}
-
 img {
   flex-shrink: 0;
   justify-content: center;
