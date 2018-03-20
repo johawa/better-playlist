@@ -1,111 +1,36 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
+import React from 'react';
 import queryString from 'query-string';
 
-
-let defaultStyle = {
-  color: '#ffff'
-}
-
-class Aggregate extends Component {
-  render() {
-    return (
-      <div style={{ ...defaultStyle, width: '40%', display: 'inline-block' }}>
-        <h2>Number Text</h2>
-      </div>
-    );
-  }
-}
-
-class Filter extends Component {
-  render() {
-    return (
-      <div style={{ ...defaultStyle }}>
-        <img />
-        <input type="text" onKeyUp={event => this.props.onTextChange(event.target.value)} />
-      </div>
-    );
-  }
-}
-
-class SearchForm extends Component {
-  render() {
+import { Album } from "./components/album";
+import { Scrollable } from "./components/scrollable";
+import { Searchform } from "./components/searchform";
 
 
-    return (
-      <form id="search-form"> 
-        <h2>Search For an Artist:</h2>
-        <input type="text" id="query" className="form-control" placeholder="Type an Artist Name" />
-        <input type="submit" id="search" className="btn btn-primary" value="Search" />
-      </form>
-    );
-  }
-}
 
 
-class Scrollable extends Component {
-  render() {
-    return (
-      <div id="scrollable">
-        <ul id="items">
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
-      </div>
-
-
-    );
-
-  }
-}
-
-
-class Album extends Component {
-  render() {
-    return (
-      <div style={{ ...defaultStyle }}>
-        <img />
-        <h3>Album Name</h3>
-
-      </div>
-    );
-  }
-}
-
-class App extends Component {
+class App extends React.Component {
   constructor() {
     super();
     this.state = {
       serverData: { email: null },
       filterString: 'oasis',
-      albumNames: []
-
+      albumNames: [],
     }
   }
 
 
+
   componentDidMount() {
+    this.scrollAnimation();
+    this.fetchEmail();
+    this.initializeQuery();
+    this.fetchAlbumData();
+  }
 
-
-
-
-
-    let parsed = queryString.parse(window.location.search)
-    let accessToken = parsed.access_token
-
+  scrollAnimation() {
+    const scrollable = document.getElementById("scrollable")
+    const items = document.getElementById("items")
     //Scroll Animation
-
-    let scrollable = document.getElementById("scrollable")
-    let items = document.getElementById("items")
-
     function scrollMiddleWare(inertia = 0.8) {
       const delta = {
         x: null,
@@ -156,7 +81,6 @@ class App extends Component {
         }
       }
     }
-
     scrollable.addEventListener('mousemove',
       scrollMiddleWare(.89)((scroll) => {
         items.style.left = `${scroll.abs.x}px`;
@@ -164,6 +88,9 @@ class App extends Component {
 
 
     items.addEventListener('click', clicked => {
+      const target = clicked.target;
+      console.log(target);
+      //getAlbumsNames();
       Array.from(items.children).forEach(item => {
         const cl = clicked.path[1];
         cl.style.transform = `rotateY(0deg)`;
@@ -171,59 +98,44 @@ class App extends Component {
     })
 
 
-    //Get Email Name 
+  }
 
+  fetchEmail() {
+    const parsed = queryString.parse(window.location.search)
+    const accessToken = parsed.access_token
+
+    //Get Personal Data //Email,
     fetch('https://api.spotify.com/v1/me', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
     })
       .then(response => response.json())
       /*  .then(data => console.log(data)) */
-      .then(data => this.setState({ serverData: { email: data.email } }))
+      .then(data => this.setState({
+        serverData: { email: data.email }
+      }))
+  }
 
-
-    fetch('https://api.spotify.com/v1/search?q=oasis&type=album', {
-      headers: { 'Authorization': 'Bearer ' + accessToken }
-    })
-      .then(response => response.json())
-      .then(data => {
-        const names = data.albums.items;
-        console.log(names);
-      })
-
-
-
-    let searchForm = document.getElementById('search-form');
+  initializeQuery() {
+    //Setting up query form and its eventlistener
+    const searchForm = document.getElementById('search-form');
 
     searchForm.addEventListener('submit', event => {
       event.preventDefault();
       const value = document.getElementById('query').value;
       this.setState({ filterString: value })
+      this.setState({ status: "1" })
+      this.fetchAlbumData();
     }, false);
-
-
-
-
-
-
-
 
 
   }
 
-  render() {
-
-
-
-
-
-
-    let email = this.state.serverData.email
-
-
+  fetchAlbumData() {
+    const Names = [];
     //Fetch Spotify Data   
-    let parsed = queryString.parse(window.location.search)
-    let accessToken = parsed.access_token
-    let search = this.state.filterString
+    const parsed = queryString.parse(window.location.search)
+    const accessToken = parsed.access_token
+    const search = this.state.filterString
 
     fetch('https://api.spotify.com/v1/search?q=' + search + '&type=album', {
       headers: { 'Authorization': 'Bearer ' + accessToken }
@@ -233,6 +145,23 @@ class App extends Component {
         const uris = data.albums.items.map(item => {
           return item.id;
         }).slice(0, 10);
+
+        const names = data.albums.items.map(item => {
+          return item.name;
+        }).slice(0, 10);
+
+
+        Names.push(names);
+        if (this.state.status === "1") {
+          this.setState({
+            albumNames: Names,
+            status: "0"
+          })
+        }
+
+
+
+
         const tasks = uris.map(id => fetch('https://api.spotify.com/v1/albums/' + id, {
           headers: { 'Authorization': 'Bearer ' + accessToken }
         }))
@@ -258,39 +187,26 @@ class App extends Component {
         images.forEach(image => {
           imgArr.push(image.outerHTML);
         });
+     
         const ul = document.getElementById("items");
         const li = Array.from(ul.children);
         for (let i = 0; i < li.length; i++) {
           li[i].style.zIndex = 100 + ([i] * -1);
-          li[i].innerHTML = imgArr[i];
+          li[i].innerHTML = imgArr[i];    
+                
         };
       });
+  }
 
 
-
-
-
-
-
-
-
-
+  render() {
     return (
-      < div >
-        <h3>Logged in as: {email}</h3>
-        {/*    <Aggregate />
-        <Aggregate /> */}
-
-        <SearchForm />
-
-        {/* <Filter onTextChange={text =>
-          this.setState({ filterString: text },
-          )} /> */}
-
+      <div>
+        <h3>Logged in as: {this.state.serverData.email}</h3>
+        <Searchform />
         <Scrollable />
-
-        <Album />
-      </div >
+        <Album albumNames={this.state.albumNames} />
+      </div>
     );
   }
 }

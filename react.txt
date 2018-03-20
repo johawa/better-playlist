@@ -1,0 +1,443 @@
+React.js    
+___________________________
+
+
+Communication Parent to Child 
+
+
+
+1. react Component: 
+
+is a javascript class extendet with a raect component;
+
+class Home extends React.Component {
+    constructor {
+        super();
+    }
+
+    method1--
+    mehtod2--
+
+    render () {
+    }
+
+    return (
+     <div></div>
+     etc..
+    );
+ }
+
+
+
+2.props: 
+-------
+access via render method in a component
+
+
+render()
+console.log(this.props.name) //name 
+return(
+    -----
+)
+
+you asing a prop in the App component
+
+<Component name={Hallo} />
+this will asing a prop to the component
+
+or in the App Component under render 
+
+render () {
+    let user = {
+        name: "Johannes",
+        age: 27
+    }
+
+return (
+----
+);
+}
+
+---> in the Component:
+
+ return (
+     <div>{this.props.user.name}</div> //Johannes
+     etc..
+    );
+
+
+2.Loop through an array
+
+App Component :
+render () {
+    let user = {
+        name: "Johannes",
+        hobbies: ["lesen", "Musik", "Tanzen"]
+    }
+
+
+In the Component:
+
+return (
+    <div>
+    <ul>
+     {this.props.user.hobbies.map((element, i) => 
+       <li key={i}>{element}</li>
+     )}
+    </ul>
+    </div>
+)
+
+3. what also works for the constructor is:
+
+constructor(prosp) {
+    super();
+    this.age = this.props.age 
+} 
+
+method() {
+    this.age += 3
+}
+
+
+//output: {this.age} works
+
+
+<button onCLick={this.method}>Submit</button> 
+
+ onClick (is the Eventlistener)
+
+do not make like this : onClick={this.method()}.. because that will exectute the method 
+immediately, because inside of the {} is javaschript 
+
+to onClick={this.method} will just place a reference to the method when the Eventlistener onClick 
+is executed
+
+this wont work because the this keyword is always just refering to the function that executed this method so, here the button
+
+soultion you have to bind the this.method to the Component like :
+
+onClick={this.method.bind(this)}
+
+or just 
+
+onCLick={() => this.method()}
+
+                    
+------------------------------------------
+
+4.Events (this.state + this.setState)
+
+
+react.js will only rerender when the state has changed, 
+to the upper example wont work, because this.age will change but no the DOM 
+because there is no rerndering 
+because props is only what you pass in from outside of an component 
+but not what will happpen inside of this compoonent
+state is what will happen inside of this component
+
+to say react.js to rerender just use 
+1. this.state {}
+and 2. this.setState({}) ...
+
+
+so here is an example : 
+
+class ....
+constructor(props) {
+    super();
+    this.state = {
+        age: this.props.age
+    }
+}
+
+this.state is an Object 
+props should only assigned to the this.state Object as 
+an initinal Value !!
+
+so better would be (this is just a naming thig) 
+
+<class initinalAge={29}/>
+
+class ....
+constructor(props) {
+    super();
+    this.state = {
+        age: this.props.initinalAge
+    }
+
+ method () {
+     this.setState({
+         age: this.state.age + 3
+     })
+ }
+}
+
+
+to have an dynamical output just write
+
+<p>your age: {this.state.age} </p>
+
+enable paint flashing in the chrome browser
+
+
+5. Stateless Components
+
+- better performence 
+- if a component dont needs state 
+- but props are available
+
+const export COMPONENENT_NAME = (props) => {
+    return (
+        ---
+    );
+};
+
+--> This is a Stateless-Commponent
+
+
+6.Communication Child to Parent Commponent
+
+Partent //APP :
+
+
+class App extends React.Commponent {
+    onGreet () {
+        alert('HI!')
+    }
+
+    render () {
+        return (
+        <Home sayHello={this.OnGreet} /}   passing a props on greet to the Child/Home element
+        )
+   }
+}
+
+
+
+class Home extends React.Commponent {
+
+    render () {
+        return (
+       <button onClick={this.props.sayHello}></button>  //"HI!"
+        )
+   }
+}
+
+6.2 trigger a rerndering from outside 
+
+
+class App extends React.Commponent {
+    constructor() {
+        super();
+        this.state = {
+            homeLink: "Home"
+        }
+    }
+    onChangeName (newName) {
+        this.setState({
+            homeLink: newName
+        })
+    }
+
+    render () {
+        return (
+        <Home changeName={this.onChangeName.bind(this)} /}  
+   }
+}
+
+
+class Home extends React.Commponent {
+  
+    render () {
+        return (
+       <button onClick={this.props.changeName("Bio")}></button>  
+        )
+   }
+}
+
+or : 
+
+class Home extends React.Commponent {
+    constructor() {
+        super();
+        this.state= {
+            homeLink = "Bio"
+        }
+    }
+      onChangeLink() {
+        this.props.ChangeName(this.state.homeLink);
+    }
+
+
+    render () {
+        return (
+       <button onClick={onChangeLink.bind(this)}></button>   //bind this beacause i am using the this keyword in the onChangeLInk Method
+        )
+   }
+}
+
+7. Two Way Binding
+
+class App extends React.Commponent {
+    constructor() {
+        super();
+        this.state = {
+            homeLink: "Home"
+        }
+    }
+    
+    onChangeName (newName) {
+        this.setState({
+            homeLink: newName
+        })
+    }
+
+    render () {
+        return (
+        <Home 
+             changeName={this.onChangeName.bind(this)}
+             initialLink={this.state.homeLink}             
+         />  
+   }
+}
+
+class Home extends React.Commponent {
+    constructor(props) {
+        super();
+        this.state= {
+            homeLink = props.initialLink
+        }
+    }
+
+    onHandleChange(event) {
+        this.setState({
+            homeLink: event.target.value
+        })
+    }
+      
+    onChangeLink() {
+        this.props.ChangeName(this.state.homeLink);
+    }
+
+
+    render () {
+        return (
+       <input type="text" value={this.props.initialLink} onChange={(event) => onHandleChange(event)} />
+       <button onClick={onChangeLink.bind(this)}></button>   //bind this beacause i am using the this keyword in the onChangeLInk Method
+        )
+   }
+}
+
+
+8. Component Lifecycle 
+
+1. componentWillMount   --- Immediately before initial rendering
+2. componentDidMount    --- Immediately after initial rendering
+3. componentWillReceiveProps --- When Component receives new props
+4. shouldComponentUpdate --- Before rendering, after receiving new props or state but in a question way //true or false
+   //return false to prevent rendering 
+5. componentWillUpdate --- Before rendering, after receiving new props or state
+6. componentDidUpdate --- After component's update are flushed to DOM
+7. componentWillUnmount --- Immediately before removing component from DOM 
+
+9. Route Setup
+
+npm install --save react-router
+
+import {Router, Route, browserHistory, IndexRoute} from "react-router"
+import {Root} from "./link to your user component";
+import {User} from "./link to your user component";
+import {Home} from "./link to your home component";
+
+in index.js 
+
+class App extends React.Commponent {
+    render () {
+        return (
+            <Router history={browserHistory}>
+               <Route path={"/"} component={Root}>
+                  <IndexRoute component={Home}/> //Default Route
+                  <Route path={"user"} component={User} /> //localhost:8888/user  -- will load User component
+                  <Route path={"home"} component={Home} /> //localhost:8888/home  -- will load Home component
+               </Route>          
+            
+            </Router>
+        );
+    }
+}
+
+render(<App />, window.document.getElementByID("app"));
+
+
+package.json --> build: -->  --history-api-fallback
+
+
+
+Root.js --->
+
+import React from "react"
+
+import {Header} from "./Header";
+
+export class Root extends React.Component {
+    render () {
+        return (
+        <div>
+           <Header />
+        </div>
+        <div>
+           {this.props.children}
+        </div>
+        )
+    }
+}
+
+
+10. Adding Links to Routing
+
+import React from "react";
+import {Link} from "react-router";
+
+export const Header = (props) => {
+    return (       
+       <p><Link to={"/home"}>HOME</Link></p>    // <Link> is like an anchor tag  like href=""
+       <p><Link to={"/user"}>USER</Link></p>
+    )
+}
+
+
+Einstellung Möglichkeiten:
+Bsp : 
+ <p><Link to={"/user"} activeStyle={{color:"red"}} activeClassName={"active"}>USER</Link></p>
+ 
+
+10.2 adding link via code 
+
+for example in a component
+
+import React from "react";
+import { browserHistory } from "react-router";
+
+export class User extends React.Commponent {
+    onNavigateHome () {
+        browserHistory.push("/home");
+    }
+
+    render () {
+        retun (
+            <button onClick={this.onNavigateHome}> Go Home </button>
+        );
+    }
+}
+
+
+https://www.youtube.com/watch?v=5pt_igBTCsI&list=PL55RiY5tL51oyA8euSROLjMFZbXaV7skS&index=17
+
+ab min 8
+
+
+
+
+
+
