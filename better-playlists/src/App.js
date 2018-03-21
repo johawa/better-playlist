@@ -7,8 +7,9 @@ import { Album } from "./components/album";
 import { Scrollable } from "./components/scrollable";
 import { Searchform } from "./components/searchform";
 import { Playbutton } from "./components/playbutton";
+import { Volumeslider } from "./components/volumeslider";
 
-
+let player;
 
 
 class App extends React.Component {
@@ -18,21 +19,104 @@ class App extends React.Component {
       serverData: { email: null },
       filterString: 'oasis',
       albumNames: [],
+      albumTracks: [],
       playing: false,
       device_id: null,
-      player: {}
+      player: {},
+      volume: 0
     }
   }
 
+  componentWillMount() {
+    this.installPlayer();
+  }
 
-
-  componentDidMount() { 
+  componentDidMount() {
     this.scrollAnimation();
     this.fetchEmail();
     this.initializeQuery();
     this.fetchAlbumData();
     this.playbutton();
-    this.installPlayer();
+  }
+
+  installPlayer() {
+    const parsed = queryString.parse(window.location.search)
+    const token = parsed.access_token
+
+    window.onSpotifyPlayerAPIReady = () => {
+      player = new window.Spotify.Player({
+        name: 'Cover Flow WebApp for Spotify',
+        getOAuthToken: cb => {
+          cb(token);
+        }
+      });
+
+
+      // Error handling
+      player.on('initialization_error', e => console.error(e));
+      player.on('authentication_error', e => console.error(e));
+      player.on('account_error', e => console.error(e));
+      player.on('playerback_error', e => console.error(e));
+
+      // playerback status updates
+      player.on('player_state_changed', state => {
+        console.log(state)
+      });
+
+
+      /*      player.pause().then(() => {
+             console.log('Paused!');
+           });
+      */
+      // Ready
+      player.on('ready', data => {
+        console.log('Ready with Device ID', data.device_id);
+        //set device-id to state
+        this.setState({
+          device_id: data.device_id
+        })
+      });
+
+      // Connect to the player!
+      player.connect().then(success => {
+        if (success) {
+          console.log('The Web Playback SDK successfully connected to Spotify!');
+        }
+      });
+    }
+
+
+
+    /*       const play = ({
+            spotify_uri,
+            playerInstance: {
+              _options: {
+                getOAuthToken,
+                device_id
+              }
+            }
+          }) => {
+            getOAuthToken(token => {
+              fetch('https://api.spotify.com/v1/me/player/play?device_id=' + device_id, {
+                method: 'PUT',
+                body: JSON.stringify({ uris: [spotify_uri] }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + token
+                },
+              });
+            });
+          };
+    
+          play({
+            playerInstance: new window.Spotify.Player({ name: "..." }),
+            spotify_uri: 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr',
+          }); */
+
+
+
+
+
   }
 
   scrollAnimation() {
@@ -203,84 +287,37 @@ class App extends React.Component {
           li[i].innerHTML = imgArr[i];
         };
       });
+    this.getAlbumTracks();
   }
 
-  installPlayer() {
+  getAlbumTracks() {  //aufräumen !
     const parsed = queryString.parse(window.location.search)
-    const token = parsed.access_token
+    const accessToken = parsed.access_token
+    const search = this.state.filterString
 
-    window.onSpotifyPlayerAPIReady = () => {
-      let player = new window.Spotify.Player({
-        name: 'Cover Flow WebApp for Spotify',
-        getOAuthToken: cb => {
-          cb(token);
-        }
-      });
+    fetch('https://api.spotify.com/v1/search?q=' + search + '&type=album', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const uris = data.albums.items.map(item => {
+          return item.id;
+        }).slice(0, 10);  
 
-
-      // Error handling
-      player.on('initialization_error', e => console.error(e));
-      player.on('authentication_error', e => console.error(e));
-      player.on('account_error', e => console.error(e));
-      player.on('playerback_error', e => console.error(e));
-
-      // playerback status updates
-      player.on('player_state_changed', state => {
-        console.log(state)
-      });
-
-      // Ready
-      player.on('ready', data => {
-        console.log('Ready with Device ID', data.device_id);
-        //set device-id to state
+        const tasks = uris.map(id => fetch('https://api.spotify.com/v1/albums/' + id + '/tracks', {
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        }))
+        return Promise.all(tasks);
+      })
+      .then(responses => Promise.all(responses.map(r => r.json())))
+      .then(albums => Promise.all(albums.map(album => album.items[0].uri)))
+      .then(ids => {
         this.setState({
-          device_id: data.device_id
+          albumTracks: ids
         })
-      });
-
-      player.pause().then(() => {
-        console.log('Paused!');
-      });
-
-      // Connect to the player!
-      player.connect().then(success => {
-        if (success) {
-          console.log('The Web Playback SDK successfully connected to Spotify!');
-        }
-      });
-      return player;
-    } 
-    /*       const play = ({
-            spotify_uri,
-            playerInstance: {
-              _options: {
-                getOAuthToken,
-                device_id
-              }
-            }
-          }) => {
-            getOAuthToken(token => {
-              fetch('https://api.spotify.com/v1/me/player/play?device_id=' + device_id, {
-                method: 'PUT',
-                body: JSON.stringify({ uris: [spotify_uri] }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + token
-                },
-              });
-            });
-          };
-    
-          play({
-            playerInstance: new window.Spotify.Player({ name: "..." }),
-            spotify_uri: 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr',
-          }); */
-
-
-
-
-
+      })
   }
+
 
   playbutton() {
     const btn = document.getElementById('playbutton');
@@ -294,41 +331,51 @@ class App extends React.Component {
         this.stopSong();
       }
     })
-
-
   }
 
   playSong() {
     const device_id = this.state.device_id;
     const parsed = queryString.parse(window.location.search)
     const token = parsed.access_token
+    const spotify_uri = 'spotify:track:4JXbqyToOByvYQjzKAflX9'
+    /*  const test = this.state.albumTracks.map(track => JSON.stringify({ uris: [track] }))
+     console.log(test); */
+
 
     fetch("https://api.spotify.com/v1/me/player/play?device_id=" + device_id, {
       headers: { 'Authorization': 'Bearer ' + token },
       method: 'PUT',
-      body: '{"uris": ["spotify:track:0eGsygTp906u18L0Oimnem"]}',
+      body: JSON.stringify({ uris: [spotify_uri] }),
     }).then(data => console.log(data))
 
     this.setState({
       playing: true
     })
+    this.getVolume();
+
 
   }
 
-  stopSong() {    
-    this.setState({
-      playing: false,
-    }) 
-
-    const device_id = this.state.device_id;
-    const parsed = queryString.parse(window.location.search)
-    const token = parsed.access_token
-
-    fetch("https://api.spotify.com/v1/me/player/pause?device_id=" + device_id, {
-      headers: { 'Authorization': 'Bearer ' + token },
-      method: 'PUT',  
-    })
+  stopSong() {
+    player.togglePlay().then(() => {
+      this.setState({
+        playing: false,
+      })
+      console.log('Paused!');
+    });
   }
+
+  getVolume() {
+    player.getVolume().then(volume => {
+      const volume_percentage = volume;
+      this.setState({
+        volume: volume_percentage
+      })           
+    });
+  }
+
+
+
 
 
   render() {
@@ -338,6 +385,7 @@ class App extends React.Component {
         <h3>Logged in as: {this.state.serverData.email}</h3>
         <Searchform />
         <Playbutton />
+        <Volumeslider volume_start={this.state.volume} />
         <Scrollable />
         <Album albumNames={this.state.albumNames} />
       </div>
@@ -346,6 +394,8 @@ class App extends React.Component {
 }
 
 export default App;
+export { player }
+
 
 
         /* 'https://api.spotify.com/v1/me' */
