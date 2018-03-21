@@ -6,6 +6,7 @@ import queryString from 'query-string';
 import { Album } from "./components/album";
 import { Scrollable } from "./components/scrollable";
 import { Searchform } from "./components/searchform";
+import { Playbutton } from "./components/playbutton";
 
 
 
@@ -17,17 +18,20 @@ class App extends React.Component {
       serverData: { email: null },
       filterString: 'oasis',
       albumNames: [],
+      playing: false,
+      device_id: null
     }
   }
 
 
 
   componentDidMount() {
-    this.installPlayer();
     this.scrollAnimation();
     this.fetchEmail();
     this.initializeQuery();
     this.fetchAlbumData();
+    this.playbutton();
+    this.installPlayer();
   }
 
   scrollAnimation() {
@@ -202,13 +206,14 @@ class App extends React.Component {
 
   installPlayer() {
     const parsed = queryString.parse(window.location.search)
-    const _token = parsed.access_token
+    const token = parsed.access_token
+
 
     window.onSpotifyPlayerAPIReady = () => {
       const player = new window.Spotify.Player({
-        name: 'Web Playback SDK Template',
+        name: 'Cover Flow WebApp for Spotify',
         getOAuthToken: cb => {
-          cb(_token);
+          cb(token);
         }
       });
 
@@ -216,9 +221,9 @@ class App extends React.Component {
       player.on('initialization_error', e => console.error(e));
       player.on('authentication_error', e => console.error(e));
       player.on('account_error', e => console.error(e));
-      player.on('playback_error', e => console.error(e));
+      player.on('playerback_error', e => console.error(e));
 
-      // Playback status updates
+      // playerback status updates
       player.on('player_state_changed', state => {
         console.log(state)
       });
@@ -226,9 +231,16 @@ class App extends React.Component {
       // Ready
       player.on('ready', data => {
         console.log('Ready with Device ID', data.device_id);
+        //set device-id to state
+        this.setState({
+          device_id: data.device_id
+        })
+        // play a track using our new device ID
+        // play(data.device_id);       
+      });
 
-        // Play a track using our new device ID
-        play(data.device_id);
+      player.pause().then(() => {
+        console.log('Paused!');
       });
 
       // Connect to the player!
@@ -239,22 +251,92 @@ class App extends React.Component {
       });
     }
 
-    function play(device_id) {  
+    /*  function play(device_id) {    
+ 
+       fetch("https://api.spotify.com/v1/me/player/play?device_id=" + device_id, {
+         headers: { 'Authorization': 'Bearer ' + token },
+         method: 'PUT',
+         body: '{"uris": ["spotify:track:0eGsygTp906u18L0Oimnem"]}',
+       })
+         .then(data => console.log(data))
+         
+     }  */
 
-      fetch("https://api.spotify.com/v1/me/player/play?device_id=" + device_id, {
-        headers: { 'Authorization': 'Bearer ' + _token },
-        method: 'PUT',
-        body: '{"uris": ["spotify:track:0eGsygTp906u18L0Oimnem"]}',})
-        .then(data => console.log(data))
+
+
+
+    /*       const play = ({
+            spotify_uri,
+            playerInstance: {
+              _options: {
+                getOAuthToken,
+                device_id
+              }
+            }
+          }) => {
+            getOAuthToken(token => {
+              fetch('https://api.spotify.com/v1/me/player/play?device_id=' + device_id, {
+                method: 'PUT',
+                body: JSON.stringify({ uris: [spotify_uri] }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + token
+                },
+              });
+            });
+          };
     
-    }
+          play({
+            playerInstance: new window.Spotify.Player({ name: "..." }),
+            spotify_uri: 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr',
+          }); */
+
+
+
+
+
   }
 
+  playbutton() {
+    const btn = document.getElementById('playbutton');
+    btn.addEventListener('click', event => {
+      if (!this.state.playing) {
+        btn.innerHTML = 'Pause!'
+        this.playSong();
+      }
+      else if (this.state.playing) {
+        btn.innerHTML = 'Play!'
+        this.stopSong();
+      }
+    })
 
 
+  }
 
+  playSong() {
+    const device_id = this.state.device_id;
+    const parsed = queryString.parse(window.location.search)
+    const token = parsed.access_token
 
+    fetch("https://api.spotify.com/v1/me/player/play?device_id=" + device_id, {
+      headers: { 'Authorization': 'Bearer ' + token },
+      method: 'PUT',
+      body: '{"uris": ["spotify:track:0eGsygTp906u18L0Oimnem"]}',
+    }).then(data => console.log(data))
 
+    this.setState({
+      playing: true
+    })
+
+    console.log('playing on', device_id);
+  }
+
+  stopSong() {
+    this.setState({
+      playing: false
+    })
+
+  }
 
 
   render() {
@@ -263,6 +345,7 @@ class App extends React.Component {
       <div>
         <h3>Logged in as: {this.state.serverData.email}</h3>
         <Searchform />
+        <Playbutton />
         <Scrollable />
         <Album albumNames={this.state.albumNames} />
       </div>
