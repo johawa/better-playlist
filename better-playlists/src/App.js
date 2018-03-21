@@ -19,13 +19,14 @@ class App extends React.Component {
       filterString: 'oasis',
       albumNames: [],
       playing: false,
-      device_id: null
+      device_id: null,
+      player: {}
     }
   }
 
 
 
-  componentDidMount() {
+  componentDidMount() { 
     this.scrollAnimation();
     this.fetchEmail();
     this.initializeQuery();
@@ -208,14 +209,14 @@ class App extends React.Component {
     const parsed = queryString.parse(window.location.search)
     const token = parsed.access_token
 
-
     window.onSpotifyPlayerAPIReady = () => {
-      const player = new window.Spotify.Player({
+      let player = new window.Spotify.Player({
         name: 'Cover Flow WebApp for Spotify',
         getOAuthToken: cb => {
           cb(token);
         }
       });
+
 
       // Error handling
       player.on('initialization_error', e => console.error(e));
@@ -235,8 +236,6 @@ class App extends React.Component {
         this.setState({
           device_id: data.device_id
         })
-        // play a track using our new device ID
-        // play(data.device_id);       
       });
 
       player.pause().then(() => {
@@ -249,22 +248,8 @@ class App extends React.Component {
           console.log('The Web Playback SDK successfully connected to Spotify!');
         }
       });
-    }
-
-    /*  function play(device_id) {    
- 
-       fetch("https://api.spotify.com/v1/me/player/play?device_id=" + device_id, {
-         headers: { 'Authorization': 'Bearer ' + token },
-         method: 'PUT',
-         body: '{"uris": ["spotify:track:0eGsygTp906u18L0Oimnem"]}',
-       })
-         .then(data => console.log(data))
-         
-     }  */
-
-
-
-
+      return player;
+    } 
     /*       const play = ({
             spotify_uri,
             playerInstance: {
@@ -328,14 +313,21 @@ class App extends React.Component {
       playing: true
     })
 
-    console.log('playing on', device_id);
   }
 
-  stopSong() {
+  stopSong() {    
     this.setState({
-      playing: false
-    })
+      playing: false,
+    }) 
 
+    const device_id = this.state.device_id;
+    const parsed = queryString.parse(window.location.search)
+    const token = parsed.access_token
+
+    fetch("https://api.spotify.com/v1/me/player/pause?device_id=" + device_id, {
+      headers: { 'Authorization': 'Bearer ' + token },
+      method: 'PUT',  
+    })
   }
 
 
