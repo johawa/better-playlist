@@ -359,8 +359,8 @@ class App extends React.Component {
 
   startInterval() {
     this.Interval = setInterval(() => {  
-      player.getCurrentState().then(state => {      
-          const posit = Math.round(state.position);  
+      player.getCurrentState().then(data => {      
+          const posit = Math.round(data.position);  
           this.setState({
             actual_song_position: posit 
           });    
@@ -373,7 +373,7 @@ class App extends React.Component {
       }
 
   render() {
-        return(
+      return(
       <div>
       <h3>Logged in as: {this.state.serverData.email}</h3>
       <Searchform />

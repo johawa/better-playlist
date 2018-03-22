@@ -6,26 +6,49 @@ export class Songposition extends Component {
     constructor(props, context) {
         super(props, context)
         this.state = {
-            position: this.props.position
+            position: 0,
         }
     }
 
-    seekPosition = () => {
+    componentWillReceiveProps() {
+        this.setState({
+            position: this.props.position
+        })
+    }
+
+    seekPosition = (value) => {
         console.log('seeking');
+        this.setState({
+            position: value
+        })
+    }
+
+    putSeekedPosition = () => {
+        const position = this.state.position
+        console.log(position)
+        player.seek(position).then(() => {
+            console.log('Changed position!');
+        });
     }
 
 
+
+
     render() {
+
+        const duration = this.props.duration
         return (
+
             <div>
-                <p>{this.props.position}</p>
+                <p>{this.state.position}</p>
                 <p>{'Dauer ' + this.props.duration + ' ms __ Titel: ' + this.props.playing + ' __ Von: ' + this.props.artist}</p>
                 <Slider
                     min={0}
-                    max={this.props.duration}
-                    value={this.props.position}
-                    onChangeComplete={this.seekPosition}
-                    orientation="horizontal"                    
+                    max={duration}
+                    value={this.state.position}
+                    onChange={this.seekPosition}
+                    onChangeComplete={this.putSeekedPosition}
+                    orientation="horizontal"
                 />
             </div>
         )
