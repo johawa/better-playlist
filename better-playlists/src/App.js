@@ -29,7 +29,7 @@ class App extends React.Component {
       actual_song: '',
       actual_song_artist: '',
       actual_song_position: 0,
-      timer_runnig: false,   
+      timer_runnig: false,
     }
   }
 
@@ -44,10 +44,6 @@ class App extends React.Component {
     this.fetchAlbumData();
     this.playbutton();
   }
-
-  /*  componentWillUnmount() {
-     clearInterval(this.getTitlePosition);
-   } */
 
   installPlayer() {
     const parsed = queryString.parse(window.location.search)
@@ -362,26 +358,31 @@ class App extends React.Component {
   }
 
   startInterval() {
-    this.Interval = setInterval(() => {
-      console.log('tick');
-    }, 1000);
-  }
+    this.Interval = setInterval(() => {  
+      player.getCurrentState().then(state => {      
+          const posit = Math.round(state.position);  
+          this.setState({
+            actual_song_position: posit 
+          });    
+        });
+      }, 1000);
+    }
 
   stopInterval() {
-    clearInterval(this.Interval);
-  }
+        clearInterval(this.Interval);
+      }
 
   render() {
-    return (
+        return(
       <div>
-        <h3>Logged in as: {this.state.serverData.email}</h3>
-        <Searchform />
-        <Playbutton />
-        <Songposition duration={this.state.song_duration} playing={this.state.actual_song} artist={this.state.actual_song_artist} position={this.state.actual_song_position} />
-        <Volumeslider volume_start={this.state.volume} />
-        <Scrollable />
-        <Album albumNames={this.state.albumNames} />
-      </div>
+      <h3>Logged in as: {this.state.serverData.email}</h3>
+      <Searchform />
+      <Playbutton />
+      <Songposition duration={this.state.song_duration} playing={this.state.actual_song} artist={this.state.actual_song_artist} position={this.state.actual_song_position} />
+      <Volumeslider volume_start={this.state.volume} />
+      <Scrollable />
+      <Album albumNames={this.state.albumNames} />
+      </div >
     );
   }
 }
@@ -391,5 +392,3 @@ export { player }
 
 
 
-        /* 'https://api.spotify.com/v1/me' */
- /*   .then(data => this.setState({serverData: {email: data.email } })) */
