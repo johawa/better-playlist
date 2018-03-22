@@ -5,30 +5,44 @@ import Slider from 'react-rangeslider'
 export class Songposition extends Component {
     constructor(props, context) {
         super(props, context)
+
         this.state = {
+            seeking: false,
             position: 0,
         }
     }
 
     componentWillReceiveProps() {
-        this.setState({
-            position: this.props.position
-        })
+        this.updatePosition();
     }
+
+    updatePosition() {
+        if (!this.state.seeking) {
+            this.setState({
+                position: this.props.position
+            })
+        }
+        else {
+            null
+        }
+    }
+
 
     seekPosition = (value) => {
         console.log('seeking');
         this.setState({
-            position: value
+            position: value,
+            seeking: true
         })
     }
 
     putSeekedPosition = () => {
         const position = this.state.position
-        console.log(position)
         player.seek(position).then(() => {
             console.log('Changed position!');
-        });
+        }).then(this.setState({
+            seeking: false,
+        }));
     }
 
 
@@ -37,6 +51,7 @@ export class Songposition extends Component {
     render() {
 
         const duration = this.props.duration
+
         return (
 
             <div>
