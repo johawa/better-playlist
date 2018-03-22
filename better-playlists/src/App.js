@@ -8,6 +8,7 @@ import { Scrollable } from "./components/scrollable";
 import { Searchform } from "./components/searchform";
 import { Playbutton } from "./components/playbutton";
 import { Volumeslider } from "./components/volumeslider";
+import { Songposition } from "./components/songposition";
 
 let player;
 
@@ -15,6 +16,7 @@ let player;
 class App extends React.Component {
   constructor() {
     super();
+    this.startInterval = this.startInterval.bind(this);
     this.state = {
       serverData: { email: null },
       filterString: 'oasis',
@@ -22,8 +24,12 @@ class App extends React.Component {
       albumTracks: [],
       playing: false,
       device_id: null,
-      player: {},
-      volume: 0
+      volume: 0,
+      song_duration: 0,
+      actual_song: '',
+      actual_song_artist: '',
+      actual_song_position: 0,
+      timer_runnig: false,   
     }
   }
 
@@ -38,6 +44,10 @@ class App extends React.Component {
     this.fetchAlbumData();
     this.playbutton();
   }
+
+  /*  componentWillUnmount() {
+     clearInterval(this.getTitlePosition);
+   } */
 
   installPlayer() {
     const parsed = queryString.parse(window.location.search)
@@ -59,15 +69,11 @@ class App extends React.Component {
       player.on('playerback_error', e => console.error(e));
 
       // playerback status updates
-      player.on('player_state_changed', state => {
-        console.log(state)
-      });
+      /*   player.on('player_state_changed', state => {
+          console.log(state)
+        }); */
 
 
-      /*      player.pause().then(() => {
-             console.log('Paused!');
-           });
-      */
       // Ready
       player.on('ready', data => {
         console.log('Ready with Device ID', data.device_id);
@@ -84,39 +90,6 @@ class App extends React.Component {
         }
       });
     }
-
-
-
-    /*       const play = ({
-            spotify_uri,
-            playerInstance: {
-              _options: {
-                getOAuthToken,
-                device_id
-              }
-            }
-          }) => {
-            getOAuthToken(token => {
-              fetch('https://api.spotify.com/v1/me/player/play?device_id=' + device_id, {
-                method: 'PUT',
-                body: JSON.stringify({ uris: [spotify_uri] }),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + token
-                },
-              });
-            });
-          };
-    
-          play({
-            playerInstance: new window.Spotify.Player({ name: "..." }),
-            spotify_uri: 'spotify:track:7xGfFoTpQ2E7fRF5lN10tr',
-          }); */
-
-
-
-
-
   }
 
   scrollAnimation() {
@@ -302,7 +275,7 @@ class App extends React.Component {
       .then(data => {
         const uris = data.albums.items.map(item => {
           return item.id;
-        }).slice(0, 10);  
+        }).slice(0, 10);
 
         const tasks = uris.map(id => fetch('https://api.spotify.com/v1/albums/' + id + '/tracks', {
           headers: { 'Authorization': 'Bearer ' + accessToken }
@@ -317,7 +290,6 @@ class App extends React.Component {
         })
       })
   }
-
 
   playbutton() {
     const btn = document.getElementById('playbutton');
@@ -349,20 +321,21 @@ class App extends React.Component {
     }).then(data => console.log(data))
 
     this.setState({
-      playing: true
+      playing: true,
+      timer_runnig: true
     })
     this.getVolume();
-
-
+    this.getTitleInfos();
+    this.startInterval();
   }
 
   stopSong() {
     player.togglePlay().then(() => {
       this.setState({
         playing: false,
+        timer_runnig: false
       })
-      console.log('Paused!');
-    });
+    }).then(this.stopInterval())
   }
 
   getVolume() {
@@ -370,21 +343,41 @@ class App extends React.Component {
       const volume_percentage = volume;
       this.setState({
         volume: volume_percentage
-      })           
+      })
     });
   }
 
+  getTitleInfos() {
+    player.addListener('player_state_changed', ({
+      position,
+      duration,
+      track_window: { current_track }
+    }) => {
+      this.setState({
+        song_duration: duration,
+        actual_song: current_track.name,
+        actual_song_artist: current_track.artists["0"].name,
+      })
+    });
+  }
 
+  startInterval() {
+    this.Interval = setInterval(() => {
+      console.log('tick');
+    }, 1000);
+  }
 
-
+  stopInterval() {
+    clearInterval(this.Interval);
+  }
 
   render() {
-
     return (
       <div>
         <h3>Logged in as: {this.state.serverData.email}</h3>
         <Searchform />
         <Playbutton />
+        <Songposition duration={this.state.song_duration} playing={this.state.actual_song} artist={this.state.actual_song_artist} position={this.state.actual_song_position} />
         <Volumeslider volume_start={this.state.volume} />
         <Scrollable />
         <Album albumNames={this.state.albumNames} />
